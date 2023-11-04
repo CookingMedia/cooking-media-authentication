@@ -21,6 +21,18 @@ public static class JwtUtils
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    public static void Verify(string token, string signingKey)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        tokenHandler.ValidateToken(token, new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        }, out _);
+    }
+
     public static int? GetIdFromTokenString(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();

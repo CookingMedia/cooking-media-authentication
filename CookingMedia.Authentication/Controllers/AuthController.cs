@@ -4,6 +4,7 @@ using CookingMedia.Authentication.Entities;
 using CookingMedia.Authentication.Models;
 using Isopoh.Cryptography.Argon2;
 using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CookingMedia.Authentication.Controllers;
 
@@ -27,23 +28,23 @@ public class AuthController : ControllerBase
         //req.Email = req.Email.ToLower();
         if ((user = await _context.Users.FirstOrDefaultAsync(e => e.Email == req.Email)) == null)
         {
-            return Unauthorized(new { errorCode = "WRONG_EMAIL" });
+            return Unauthorized(new { ErrorCode = "WRONG_EMAIL" });
         }
         if (!Argon2.Verify(user.Password, req.Password))
         {
-            return Unauthorized(new { errorCode = "WRONG_PASSWORD" });
+            return Unauthorized(new { ErrorCode = "WRONG_PASSWORD" });
         }
         return GenerateLoginResponse(user);
     }
 
     [HttpPost("signup")]
-    public async Task<ActionResult<LoginResponseModel>> signup(SignupRequestModel req)
+    public async Task<ActionResult<LoginResponseModel>> Signup(SignupRequestModel req)
     {
         // Check if email is already used
         req.Email = req.Email.ToLower();
         if (await _context.Users.AnyAsync(e => e.Email == req.Email))
         {
-            return BadRequest(new { errorCode = "EMAIL_ALREADY_USED" });
+            return BadRequest(new { ErrorCode = "EMAIL_ALREADY_USED" });
         }
 
         // Create user
@@ -58,6 +59,28 @@ public class AuthController : ControllerBase
         await _context.SaveChangesAsync();
 
         return GenerateLoginResponse(user);
+    }
+
+    [HttpGet("verify")]
+    public IActionResult VerifyToken(string token)
+    {
+        try
+        {
+            JwtUtils.Verify(token, _configuration["Jwt:Key"]);
+            return NoContent();
+        }
+        catch (SecurityTokenExpiredException)
+        {
+            return Unauthorized(new { ErrorCode = "EXPIRED_TOKEN" });
+        }
+        catch (SecurityTokenInvalidSignatureException)
+        {
+            return Unauthorized(new { ErrorCode = "INVALID_SIGNING_KEY" });
+        }
+        catch (Exception)
+        {
+            return BadRequest();
+        }
     }
 
     private LoginResponseModel GenerateLoginResponse(User user)
