@@ -1,0 +1,61 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker compose reference guide at
+# https://docs.docker.com/compose/compose-file/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+name: cookingmedia_authentication
+services:
+  server:
+    image: cm_authentication_api
+    build:
+      context: .
+      dockerfile: CookingMedia.Authentication/Dockerfile
+    ports:
+      - 5390:5390
+    environment:
+      - ASPNETCORE_URLS=http://+:5390
+      - Kestrel__Endpoints__Http__Url=http://*:5390
+      #- Kestrel__Endpoints__gRPC__Url=http://*:5000
+      #- Kestrel__Endpoints__gRPC__Protocols=Http2
+    env_file: .env
+
+# The commented out section below is an example of how to define a PostgreSQL
+# database that your application can use. `depends_on` tells Docker Compose to
+# start the database before your application. The `db-data` volume persists the
+# database data between container restarts. The `db-password` secret is used
+# to set the database password. You must create `db/password.txt` and add
+# a password of your choosing to it before running `docker compose up`.
+    depends_on:
+      - db
+  db:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    container_name: cm_authentication_db
+    ports:
+      - 1440:1433
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    env_file: .env
+#     restart: always
+#     user: postgres
+#     secrets:
+#       - db-password
+    volumes:
+      - cm_authentication_db_data:/var/opt/mssql
+#     expose:
+#       - 5432
+#     healthcheck:
+#       test: [ "CMD", "pg_isready" ]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+volumes:
+  cm_authentication_db_data:
+# secrets:
+#   db-password:
+#     file: db/password.txt
+

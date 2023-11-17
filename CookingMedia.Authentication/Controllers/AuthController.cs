@@ -66,7 +66,7 @@ public class AuthController : ControllerBase
     {
         try
         {
-            JwtUtils.Verify(token, _configuration["Jwt:Key"]);
+            JwtUtils.Verify(token, _configuration["Jwt_Key"]);
             return NoContent();
         }
         catch (SecurityTokenExpiredException)
@@ -89,8 +89,8 @@ public class AuthController : ControllerBase
         {
             Token = JwtUtils.GenerateTokenString(
                 user.Id,
-                TimeSpan.FromMinutes(double.Parse(_configuration["Jwt:Duration"])),
-                _configuration["Jwt:Key"],
+                TimeSpan.FromMinutes(double.Parse(_configuration["Jwt_Duration"])),
+                _configuration["Jwt_Key"],
                 new Claim(ClaimTypes.Role, user.Role)
             ),
             User = new UserResponseModel

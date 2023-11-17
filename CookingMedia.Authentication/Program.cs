@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+var connectionString = builder.Configuration["Connection_String"]
     ?? throw new InvalidOperationException("DefaultConnection is missing from configuration");
 builder.Services.AddDbContext<AuthenticationDBContext>(options => options.UseSqlServer(connectionString));
 
