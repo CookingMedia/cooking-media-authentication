@@ -11,6 +11,7 @@ name: cookingmedia_authentication
 services:
   server:
     image: cm_authentication_api
+    container_name: cm_authentication_api
     build:
       context: .
       dockerfile: CookingMedia.Authentication/Dockerfile
@@ -22,6 +23,8 @@ services:
       #- Kestrel__Endpoints__gRPC__Url=http://*:5000
       #- Kestrel__Endpoints__gRPC__Protocols=Http2
     env_file: .env
+    networks:
+      - default
 
 # The commented out section below is an example of how to define a PostgreSQL
 # database that your application can use. `depends_on` tells Docker Compose to
@@ -45,7 +48,9 @@ services:
 #     secrets:
 #       - db-password
     volumes:
-      - cm_authentication_db_data:/var/opt/mssql
+      - db:/var/opt/mssql
+    networks:
+      - default
 #     expose:
 #       - 5432
 #     healthcheck:
@@ -54,7 +59,12 @@ services:
 #       timeout: 5s
 #       retries: 5
 volumes:
-  cm_authentication_db_data:
+  db:
+    name: cm_authentication_db_data
+networks:
+  default:
+    name: cm_network
+    external: true
 # secrets:
 #   db-password:
 #     file: db/password.txt
